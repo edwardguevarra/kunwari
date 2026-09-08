@@ -14,7 +14,38 @@ telemetry, no data. It is a screensaver with impostor syndrome.
 
 ![The Roam virtual office, mid-workday](docs/roam.jpg)
 
-## Run
+## Download
+
+Grab a build from the [latest release](https://github.com/edwardguevarra/kunwari/releases/latest).
+Each one is a single self-contained executable — the whole app lives inside it. No
+installer, no runtime, nothing written to disk.
+
+| Platform | File |
+| --- | --- |
+| macOS (Apple silicon) | `kunwari_*_darwin_arm64.tar.gz` |
+| macOS (Intel) | `kunwari_*_darwin_amd64.tar.gz` |
+| Linux (x86-64 / arm64) | `kunwari_*_linux_amd64.tar.gz` / `_arm64.tar.gz` |
+| Windows (x86-64 / arm64) | `kunwari_*_windows_amd64.zip` / `_arm64.zip` |
+| Anything with a browser | `kunwari.html` — one file, double-click it |
+
+Unpack and run it. It picks a free port, opens your browser and prints the URL:
+
+    ./kunwari                # or double-click kunwari.exe on Windows
+    ./kunwari --port 8420    # pin the port
+    ./kunwari --no-open      # don't open a browser
+
+The binaries are not code-signed, so the first launch needs one extra step:
+
+* **macOS** — right-click the file and choose *Open*, or run
+  `xattr -dr com.apple.quarantine kunwari` once.
+* **Windows** — SmartScreen shows "Windows protected your PC"; choose
+  *More info → Run anyway*.
+
+If you would rather not run an unsigned binary, `kunwari.html` is the same app in a
+single file you can read before opening, and running from source below needs nothing
+but Python.
+
+## Run from source
 
     ./serve.sh            # http://localhost:8420
     ./serve.sh 9000       # or pick your own port
@@ -23,6 +54,15 @@ Then click **Start working**. It goes fullscreen on its own.
 
 No build step, no dependencies, no package manager. It is HTML, CSS and plain
 JavaScript served by Python's `http.server` — you can also just open `index.html`.
+
+## Building the releases yourself
+
+    tools/build-release.sh v1.0.0     # needs a Go toolchain, nothing else
+    python3 tools/build-single.py     # just the one-file kunwari.html
+
+`main.go` is a ~90-line launcher that embeds the site with `go:embed`, serves it on a
+local port and opens a browser. It is the only Go in the project, and the app itself
+does not know it exists.
 
 ## What it fakes
 
@@ -84,7 +124,8 @@ the fictional Halcyon team.
     js/icons.js         app icons (generated — see tools/)
     js/shell.js         mounts apps, rotates them, drives cursor and titles
     js/apps/*.js        one simulation per app
-    tools/              icon fetcher + generator, and the source logos
+    main.go             the launcher that embeds and serves it all
+    tools/              icon fetcher + generator, release builds, source logos
 
 Each app registers `{ id, icon, name, macName, menus, title, mount, start, stop,
 cursorTargets }` with `LB.register(...)`. To add one: drop a file in `js/apps/`, add a
